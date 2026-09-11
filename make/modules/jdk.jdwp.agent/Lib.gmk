@@ -33,6 +33,7 @@ include LibCommon.gmk
 
 $(eval $(call SetupJdkLibrary, BUILD_LIBDT_SOCKET, \
     NAME := dt_socket, \
+    LIBS_haiku := -lnetwork, \
     OPTIMIZATION := LOW, \
     DISABLED_WARNINGS_clang_aix := missing-braces, \
     EXTRA_HEADER_DIRS := \
@@ -52,6 +53,7 @@ TARGETS += $(BUILD_LIBDT_SOCKET)
 # JDWP_LOGGING causes log messages to be compiled into the library.
 $(eval $(call SetupJdkLibrary, BUILD_LIBJDWP, \
     NAME := jdwp, \
+    LIBS_haiku := -liconv, \
     OPTIMIZATION := LOW, \
     CFLAGS := -DJDWP_LOGGING $(ICONV_CFLAGS), \
     LDFLAGS := $(ICONV_LDFLAGS), \

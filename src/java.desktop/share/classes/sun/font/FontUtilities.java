@@ -46,6 +46,8 @@ public final class FontUtilities {
 
     public static boolean useJDKScaler;
 
+    public static boolean isHaiku;
+
     public static boolean isWindows;
 
     private static boolean debugFonts = false;
@@ -59,6 +61,8 @@ public final class FontUtilities {
 
     @SuppressWarnings("deprecation") // PlatformLogger.setLevel is deprecated.
     private static void initStatic() {
+
+        isHaiku = System.getProperty("os.name", "").equals("Haiku");
 
         isLinux = OSInfo.getOSType() == OSInfo.OSType.LINUX;
 

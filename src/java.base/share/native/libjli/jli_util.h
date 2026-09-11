@@ -103,6 +103,10 @@ JLI_CmdToArgs(char *cmdline);
 #define JLI_Lseek                       lseek
 #endif /* _WIN32 */
 
+#ifdef HAIKU
+#define JLI_Lseek                       lseek
+#endif
+
 /*
  * Make launcher spit debug output.
  */

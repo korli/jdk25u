@@ -46,7 +46,9 @@ EXCLUDE_FILES += \
     .template \
     #
 
-ifeq ($(call isTargetOs, macosx), true)
+
+
+ifeq ($(call isTargetOs, macosx haiku), true)
   # exclude all X11 on Mac.
   EXCLUDES += \
       sun/awt/screencast \
@@ -107,6 +109,7 @@ else
       sun/awt/X11/XdbeSwapInfo.java \
       sun/awt/X11/XmbTextItem.java \
       sun/awt/X11/XwcTextItem.java
+
 endif
 
 ifeq ($(call isTargetOs, windows), true)

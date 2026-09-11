@@ -209,10 +209,17 @@ ifeq ($(ENABLE_HEADLESS_ONLY), false)
     BUILD_LIBSPLASHSCREEN_splashscreen_sys.m_CFLAGS := -O0
   endif
 
+  ifeq ($(call isTargetOs, haiku), true)
+    LIBSPLASHSCREEN_EXCLUDE_SRC_PATTERNS := /unix/
+    LIBSPLASHSCREEN_HEADER_DIRS += libhaikuapp
+  endif
+
   ifeq ($(call isTargetOs, macosx), true)
     LIBSPLASHSCREEN_CFLAGS += -DWITH_MACOSX
   else ifeq ($(call isTargetOs, windows), true)
     LIBSPLASHSCREEN_CFLAGS += -DWITH_WIN32
+  else ifeq ($(call isTargetOs, haiku), true)
+    LIBSPLASHSCREEN_CFLAGS += -DWITH_HAIKU
   else
     LIBSPLASHSCREEN_CFLAGS += -DWITH_X11 $(X_CFLAGS)
   endif
@@ -261,6 +268,8 @@ ifeq ($(ENABLE_HEADLESS_ONLY), false)
       LDFLAGS := $(ICONV_LDFLAGS), \
       LDFLAGS_windows := -delayload:user32.dll, \
       JDK_LIBS_windows := java.base:libjava, \
+      JDK_LIBS_haiku := libhaikuapp, \
+      LIBS_haiku := -lbe -lstdc++ -liconv, \
       JDK_LIBS_macosx := libosxapp, \
       LIBS := $(GIFLIB_LIBS) $(LIBJPEG_LIBS) $(LIBZ_LIBS) $(PNG_LIBS) $(ICONV_LIBS), \
       LIBS_unix := $(LIBM) $(LIBPTHREAD), \
@@ -314,7 +323,7 @@ else
         -DHAVE_SYSCONF -DHAVE_SYS_MMAN_H -DHAVE_UNISTD_H \
         -DHB_NO_PRAGMA_GCC_DIAGNOSTIC
   endif
-  ifeq ($(call isTargetOs, linux macosx), true)
+  ifeq ($(call isTargetOs, linux macosx haiku), true)
     HARFBUZZ_CFLAGS += -DHAVE_INTEL_ATOMIC_PRIMITIVES -DHB_NO_VISIBILITY
   endif
 
@@ -377,7 +386,7 @@ endif
 
 ifeq ($(call isTargetOs, windows), true)
   LIBFONTMANAGER_EXCLUDE_FILES += X11FontScaler.c X11TextRenderer.c
-else ifeq ($(call isTargetOs, macosx), true)
+else ifeq ($(call isTargetOs, macosx haiku), true)
   LIBFONTMANAGER_EXCLUDE_FILES += X11FontScaler.c X11TextRenderer.c \
       fontpath.c lcdglyph.c
 else
@@ -409,6 +418,7 @@ $(eval $(call SetupJdkLibrary, BUILD_LIBFONTMANAGER, \
     LDFLAGS_FILTER_OUT := -Wl$(COMMA)-z$(COMMA)defs, \
     LDFLAGS_aix := -Wl$(COMMA)-berok, \
     JDK_LIBS := libawt java.base:libjava $(LIBFONTMANAGER_JDK_LIBS), \
+    JDK_LIBS_haiku := libawt_lwawt, \
     JDK_LIBS_macosx := libawt_lwawt, \
     JDK_LIBS_unix := java.base:libjvm, \
     LIBS := $(LIBFONTMANAGER_LIBS), \

@@ -167,7 +167,7 @@ void os::check_core_dump_prerequisites(char* buffer, size_t bufferSize, bool che
 
 bool os::committed_in_range(address start, size_t size, address& committed_start, size_t& committed_size) {
 
-#ifdef _AIX
+#if defined(__HAIKU__) || defined(_AIX)
   committed_start = start;
   committed_size = size;
   return true;
@@ -200,8 +200,8 @@ bool os::committed_in_range(address start, size_t size, address& committed_start
 
     // Get stable read
     int fail_count = 0;
-    while ((mincore_return_value = mincore(loop_base, pages_to_query * page_sz, vec)) == -1 && errno == EAGAIN){
-      if (++fail_count == 1000){
+    while ((mincore_return_value = mincore(loop_base, pages_to_query * page_sz, vec)) == -1 && errno == EAGAIN) {
+      if (++fail_count == 1000) {
         return false;
       }
     }
@@ -297,6 +297,8 @@ size_t os::lasterror(char *buf, size_t len) {
 ////////////////////////////////////////////////////////////////////////////////
 // breakpoint support
 
+#ifndef __HAIKU__
+
 void os::breakpoint() {
   BREAKPOINT;
 }
@@ -310,6 +312,8 @@ bool os::have_special_privileges() {
   static bool privileges = (getuid() != geteuid()) || (getgid() != getegid());
   return privileges;
 }
+
+#endif // __HAIKU__
 
 void os::wait_for_keypress_at_exit(void) {
   // don't do anything on posix platforms
@@ -364,6 +368,8 @@ int os::create_file_for_heap(const char* dir) {
   return fd;
 }
 
+#ifndef __HAIKU__
+
 // return current position of file pointer
 jlong os::current_file_offset(int fd) {
   return (jlong)::lseek(fd, (off_t)0, SEEK_CUR);
@@ -392,10 +398,11 @@ bool os::dir_is_empty(const char* path) {
   ::closedir(dir);
   return result;
 }
+#endif // __HAIKU__
 
 static char* reserve_mmapped_memory(size_t bytes, char* requested_addr, MemTag mem_tag) {
   char * addr;
-  int flags = MAP_PRIVATE NOT_AIX( | MAP_NORESERVE ) | MAP_ANONYMOUS;
+  int flags = MAP_PRIVATE NOT_AIX( NOT_HAIKU( | MAP_NORESERVE )) | MAP_ANONYMOUS;
   if (requested_addr != nullptr) {
     assert((uintptr_t)requested_addr % os::vm_page_size() == 0, "Requested address should be aligned to OS page size");
     flags |= MAP_FIXED;
@@ -467,7 +474,7 @@ char* os::map_memory_to_file(char* base, size_t size, int fd) {
 
 char* os::replace_existing_mapping_with_file_mapping(char* base, size_t size, int fd) {
   assert(fd != -1, "File descriptor is not valid");
-  assert(base != nullptr, "Base cannot be null");
+  assert(base != nullptr, "Base cannot be nullptr");
 
   return map_memory_to_file(base, size, fd);
 }
@@ -617,7 +624,7 @@ void os::Posix::print_rlimit_info(outputStream* st) {
   st->print("%ld", sysconf(_SC_CHILD_MAX));
 
   print_rlimit(st, ", THREADS", RLIMIT_THREADS);
-#else
+#elif !defined(HAIKU)
   print_rlimit(st, ", NPROC", RLIMIT_NPROC);
 #endif
 
@@ -842,7 +849,6 @@ void os::dll_unload(void *lib) {
   // calling dlclose the dynamic loader may free the memory containing the string, thus we need to
   // copy the string to be able to reference it after dlclose.
   const char* l_path = nullptr;
-
 #ifdef LINUX
   char* l_pathdup = nullptr;
   l_path = os::Linux::dll_path(lib);
@@ -966,9 +972,11 @@ void os::_exit(int num) {
   permit_forbidden_function::_exit(num);
 }
 
+#ifndef __HAIKU__
 void os::naked_yield() {
   sched_yield();
 }
+#endif
 
 // Sleep forever; naked call to OS-specific sleep; use with CAUTION
 void os::infinite_sleep() {
@@ -1018,7 +1026,7 @@ char* os::realpath(const char* filename, char* outbuf, size_t outbuflen) {
   char* result = nullptr;
 
   // This assumes platform realpath() is implemented according to POSIX.1-2008.
-  // POSIX.1-2008 allows to specify null for the output buffer, in which case
+  // POSIX.1-2008 allows to specify nullptr for the output buffer, in which case
   // output buffer is dynamically allocated and must be ::free()'d by the caller.
   char* p = permit_forbidden_function::realpath(filename, nullptr);
   if (p != nullptr) {
@@ -1032,7 +1040,7 @@ char* os::realpath(const char* filename, char* outbuf, size_t outbuflen) {
   } else {
     // Fallback for platforms struggling with modern Posix standards (AIX 5.3, 6.1). If realpath
     // returns EINVAL, this may indicate that realpath is not POSIX.1-2008 compatible and
-    // that it complains about the null we handed down as user buffer.
+    // that it complains about the nullptr we handed down as user buffer.
     // In this case, use the user provided buffer but at least check whether realpath caused
     // a memory overwrite.
     if (errno == EINVAL) {
@@ -1523,6 +1531,8 @@ void os::javaTimeNanos_info(jvmtiTimerInfo *info_ptr) {
 }
 #endif // ! APPLE && !AIX
 
+#ifndef __HAIKU__
+
 // Time since start-up in seconds to a fine granularity.
 double os::elapsedTime() {
   return ((double)os::elapsed_counter()) / (double)os::elapsed_frequency(); // nanosecond resolution
@@ -1572,6 +1582,8 @@ char * os::local_time_string(char *buf, size_t buflen) {
 struct tm* os::localtime_pd(const time_t* clock, struct tm*  res) {
   return localtime_r(clock, res);
 }
+
+#endif
 
 // PlatformEvent
 //
@@ -2144,6 +2156,7 @@ const char* os::path_separator() { return ":"; }
 // - The file descriptor must be valid (to create anonymous mappings, use
 //   os::reserve_memory()).
 // Returns address to mapped memory, nullptr on error
+#ifndef __HAIKU__
 char* os::pd_map_memory(int fd, const char* unused,
                         size_t file_offset, char *addr, size_t bytes,
                         bool read_only, bool allow_exec) {
@@ -2186,6 +2199,8 @@ char* os::pd_map_memory(int fd, const char* unused,
 bool os::pd_unmap_memory(char* addr, size_t bytes) {
   return munmap(addr, bytes) == 0;
 }
+
+#endif // __HAIKU__
 
 #ifdef CAN_SHOW_REGISTERS_ON_ASSERT
 static ucontext_t _saved_assert_context;

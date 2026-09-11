@@ -30,6 +30,10 @@
 #include "jni_util.h"
 #include "jdk_internal_agent_FileSystemImpl.h"
 
+#if defined(_ALLBSD_SOURCE) || defined(HAIKU)
+#define stat64 stat
+#endif
+
 /*
  * JNI_OnLoad
  */

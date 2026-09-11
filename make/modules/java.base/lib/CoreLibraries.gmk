@@ -52,8 +52,14 @@ ifeq ($(call isTargetOs, macosx), true)
   BUILD_LIBJAVA_java_props_macosx.c_CFLAGS := -x objective-c
 endif
 
+ifeq ($(call isTargetOs, haiku), true)
+  LIBJAVA_EXCLUDE_FILES += TimeZone_md.c
+endif
+
 $(eval $(call SetupJdkLibrary, BUILD_LIBJAVA, \
     NAME := java, \
+    EXCLUDE_FILES := $(LIBJAVA_EXCLUDE_FILES), \
+    LIBS_haiku := -lnetwork -lbe, \
     OPTIMIZATION := HIGH, \
     jdk_util.c_CFLAGS := $(VERSION_CFLAGS), \
     ProcessImpl_md.c_CFLAGS := $(VERSION_CFLAGS), \

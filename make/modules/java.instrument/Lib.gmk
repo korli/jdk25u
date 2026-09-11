@@ -34,6 +34,9 @@ include LibCommon.gmk
 # equivalent of strcasecmp is stricmp on Windows
 $(eval $(call SetupJdkLibrary, BUILD_LIBINSTRUMENT, \
     NAME := instrument, \
+    CFLAGS_haiku := $(ICONV_CFLAGS), \
+    LDFLAGS_haiku := $(ICONV_LDFLAGS), \
+    LIBS_haiku := -liconv, \
     OPTIMIZATION := LOW, \
     CFLAGS := $(ICONV_CFLAGS), \
     CFLAGS_windows := -Dstrcasecmp=stricmp, \

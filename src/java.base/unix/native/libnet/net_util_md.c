@@ -59,6 +59,10 @@ NET_PlatformInit()
     return 0;
 }
 
+#ifdef __HAIKU__
+#define DONT_ENABLE_IPV6 1
+#endif
+
 void
 NET_ThrowByNameWithLastError(JNIEnv *env, const char *name,
                    const char *defaultDetail) {

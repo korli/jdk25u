@@ -35,7 +35,7 @@
 #ifndef SO_REUSEPORT
 #ifdef __linux__
 #define SO_REUSEPORT 15
-#elif defined(AIX) || defined(MACOSX)
+#elif defined(AIX) || defined(MACOSX) || defined(HAIKU)
 #define SO_REUSEPORT 0x0200
 #else
 #define SO_REUSEPORT 0
@@ -74,4 +74,3 @@ jint unixSocketAddressToSockaddr(JNIEnv *env,
                                 jbyteArray uaddr,
                                 struct sockaddr_un *sa,
                                 int *len);
-

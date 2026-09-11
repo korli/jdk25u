@@ -31,6 +31,7 @@ include LibCommon.gmk
 ## Build libextnet
 ################################################################################
 
+ifeq ($(call isTargetOs, haiku), false)
 $(eval $(call SetupJdkLibrary, BUILD_LIBEXTNET, \
     NAME := extnet, \
     OPTIMIZATION := LOW, \
@@ -40,5 +41,6 @@ $(eval $(call SetupJdkLibrary, BUILD_LIBEXTNET, \
 ))
 
 TARGETS += $(BUILD_LIBEXTNET)
+endif
 
 ################################################################################

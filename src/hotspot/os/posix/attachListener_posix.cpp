@@ -39,7 +39,7 @@
 #include <sys/stat.h>
 
 #if INCLUDE_SERVICES
-#ifndef AIX
+#ifndef HAIKU || AIX
 
 #ifndef UNIX_PATH_MAX
 #define UNIX_PATH_MAX   sizeof(sockaddr_un::sun_path)
@@ -326,7 +326,6 @@ void PosixAttachOperation::complete(jint result, bufferedStream* st) {
 
 
 // AttachListener functions
-
 AttachOperation* AttachListener::dequeue() {
   JavaThread* thread = JavaThread::current();
   ThreadBlockInVM tbivm(thread);
@@ -452,6 +451,6 @@ void AttachListener::pd_detachall() {
   // do nothing for now
 }
 
-#endif // !AIX
+#endif // !HAIKU || !AIX
 
 #endif // INCLUDE_SERVICES
