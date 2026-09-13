@@ -24,7 +24,9 @@
 #include <stdio.h>
 #include <jni.h>
 #include <signal.h>
+#ifndef __HAIKU__
 #include <sys/ucontext.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,4 +54,3 @@ JNIEXPORT void JNICALL Java_TestJNI_doSomething(JNIEnv *env, jclass klass, jint 
 #ifdef __cplusplus
 }
 #endif
-

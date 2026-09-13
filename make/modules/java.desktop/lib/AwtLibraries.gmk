@@ -61,7 +61,7 @@ ifeq ($(call isTargetOs, windows), true)
       #
 endif
 
-ifeq ($(call isTargetOs, linux macosx aix), true)
+ifeq ($(call isTargetOs, linux macosx aix haiku), true)
   LIBAWT_EXCLUDE_FILES += awt_Font.c CUPSfuncs.c fontpath.c X11Color.c
 endif
 
@@ -159,8 +159,8 @@ $(eval $(call SetupJdkLibrary, BUILD_LIBAWT, \
 
 TARGETS += $(BUILD_LIBAWT)
 
-# Mac and Windows only use the native AWT lib, do not build libawt_headless
-ifeq ($(call isTargetOs, windows macosx), false)
+# Mac, Windows and Haiku only use the native AWT lib, do not build libawt_headless
+ifeq ($(call isTargetOs, windows macosx haiku), false)
   ##############################################################################
   ## Build libawt_headless
   ##############################################################################
@@ -223,7 +223,7 @@ ifeq ($(call isTargetOs, windows macosx), false)
   TARGETS += $(BUILD_LIBAWT_HEADLESS)
 endif
 
-ifeq ($(call isTargetOs, windows macosx)+$(ENABLE_HEADLESS_ONLY), false+false)
+ifeq ($(call isTargetOs, windows macosx haiku)+$(ENABLE_HEADLESS_ONLY), false+false)
   ##############################################################################
   ## Build libawt_xawt
   ##############################################################################
@@ -415,7 +415,7 @@ else
       #
 endif
 
-ifeq ($(call isTargetOs, macosx), true)
+ifeq ($(call isTargetOs, macosx haiku), true)
   # libjawt on macosx does not use the unix code
   LIBJAWT_EXCLUDE_SRC_PATTERNS := /unix/
 endif
@@ -431,7 +431,7 @@ ifeq ($(call isTargetOs, windows)+$(call isTargetCpu, x86), true+true)
   LIBJAWT_LIBS_windows := kernel32.lib
 endif
 
-ifeq ($(call isTargetOsType, unix)+$(call isTargetOs, macosx), true+false)
+ifeq ($(call isTargetOsType, unix)+$(call isTargetOs, macosx haiku), true+false)
   LIBJAWT_JDK_LIBS_unix := libawt
   ifeq ($(ENABLE_HEADLESS_ONLY), false)
     LIBJAWT_JDK_LIBS_unix += libawt_xawt
@@ -453,6 +453,7 @@ $(eval $(call SetupJdkLibrary, BUILD_LIBJAWT, \
     LDFLAGS_macosx := -Wl$(COMMA)-rpath$(COMMA)@loader_path, \
     JDK_LIBS_unix := $(LIBJAWT_JDK_LIBS_unix), \
     JDK_LIBS_windows := libawt, \
+    JDK_LIBS_haiku := libawt_lwawt, \
     JDK_LIBS_macosx := libawt_lwawt, \
     LIBS_macosx := -framework Cocoa, \
     LIBS_windows := advapi32.lib $(LIBJAWT_LIBS_windows), \
@@ -472,6 +473,22 @@ ifeq ($(call isTargetOs, windows), true)
 endif
 
 ################################################################################
+
+
+ifeq ($(call isTargetOs, haiku), true)
+  $(eval $(call SetupJdkLibrary, BUILD_LIBAWT_LWAWT, \
+      NAME := awt_lwawt, \
+      LINK_TYPE := C++, \
+      EXTRA_SRC := $(TOPDIR)/src/$(MODULE)/share/native/common/font, \
+      OPTIMIZATION := LOW, \
+      EXTRA_HEADER_DIRS := $(LIBAWT_DEFAULT_HEADER_DIRS) \
+          libawt_lwawt/awt libawt_lwawt/font include common/awt/debug \
+          common/java2d libhaikuapp java.base:libjvm, \
+      JDK_LIBS := libawt java.base:libjava libhaikuapp, \
+      LIBS := -lbe -ltracker, \
+  ))
+  TARGETS += $(BUILD_LIBAWT_LWAWT)
+endif
 
 endif # include guard
 include MakeIncludeEnd.gmk

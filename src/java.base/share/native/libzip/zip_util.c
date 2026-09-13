@@ -46,6 +46,11 @@
 #include "zip_util.h"
 #include <zlib.h>
 
+#if defined(_ALLBSD_SOURCE) || defined(HAIKU)
+#define off64_t off_t
+#define mmap64 mmap
+#endif
+
 /* USE_MMAP means mmap the CEN & ENDHDR part of the zip file. */
 #ifdef USE_MMAP
 #include <sys/mman.h>

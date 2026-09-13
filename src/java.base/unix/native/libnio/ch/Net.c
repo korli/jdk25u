@@ -64,7 +64,7 @@
 /**
  * IPV6_ADD_MEMBERSHIP/IPV6_DROP_MEMBERSHIP may not be defined on OSX and AIX
  */
-#if defined(__APPLE__) || defined(_AIX)
+#if defined(__APPLE__) || defined(_AIX)|| defined(__HAIKU__)
   #ifndef IPV6_ADD_MEMBERSHIP
     #define IPV6_ADD_MEMBERSHIP     IPV6_JOIN_GROUP
     #define IPV6_DROP_MEMBERSHIP    IPV6_LEAVE_GROUP
@@ -990,4 +990,3 @@ Java_sun_nio_ch_Net_sendOOB(JNIEnv* env, jclass this, jobject fdo, jbyte b)
     int n = send(fdval(env, fdo), (const void*)&b, 1, MSG_OOB);
     return convertReturnVal(env, n, JNI_FALSE);
 }
-

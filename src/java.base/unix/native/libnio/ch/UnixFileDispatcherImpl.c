@@ -29,8 +29,23 @@
 #include <sys/stat.h>
 #include <sys/statvfs.h>
 
-#if defined(_ALLBSD_SOURCE)
+#if defined(_ALLBSD_SOURCE) || defined(HAIKU)
+#define lseek64 lseek
+#define stat64 stat
+#define statvfs64 statvfs
+#define flock64 flock
+#define off64_t off_t
+#define F_SETLKW64 F_SETLKW
+#define F_SETLK64 F_SETLK
+#define pread64 pread
+#define pwrite64 pwrite
+#define ftruncate64 ftruncate
+#define fstat64 fstat
+#define fstatvfs64 fstatvfs
 #define fdatasync fsync
+#define mmap64 mmap
+#define statvfs64 statvfs
+#define fstatvfs64 fstatvfs
 #endif
 
 #if defined(__linux__)
@@ -296,7 +311,7 @@ Java_sun_nio_ch_UnixFileDispatcherImpl_release0(JNIEnv *env, jobject this,
 static void closeFileDescriptor(JNIEnv *env, int fd) {
     if (fd != -1) {
         int result = close(fd);
-        if (result < 0)
+        if (result < 0 && errno != ECONNRESET)
             JNU_ThrowIOExceptionWithLastError(env, "Close failed");
     }
 }
@@ -356,7 +371,7 @@ Java_sun_nio_ch_UnixFileDispatcherImpl_map0(JNIEnv *env, jclass klass, jobject f
         // ensure
         //  1) this is Linux on AArch64, x86_64, or PPC64 LE
         //  2) the mmap APIs are available at compile time
-#if !defined(LINUX) || ! (defined(aarch64) || (defined(amd64) && defined(_LP64)) || defined(ppc64le))
+#if !defined(LINUX) || !defined(HAIKU) || !(defined(aarch64) || (defined(amd64) && defined(_LP64)) || defined(ppc64le))
         // TODO - implement for solaris/AIX/BSD/WINDOWS and for 32 bit
         JNU_ThrowInternalError(env, "should never call map on platform where MAP_SYNC is unimplemented");
         return IOS_THROWN;

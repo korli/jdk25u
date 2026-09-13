@@ -57,6 +57,14 @@
   #endif
   #define statvfs statvfs64
 #endif
+
+#if defined(_ALLBSD_SOURCE) || defined(HAIKU)
+  #ifndef MACOSX
+    #define statvfs64 statvfs
+    #define stat64 stat
+  #endif
+#endif
+
 /* -- Field IDs -- */
 
 static struct {
